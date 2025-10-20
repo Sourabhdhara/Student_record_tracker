@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attendance Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .att-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .att-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .att-header h1 { margin: 0; font-size: 2.2rem; color: #ffffff; text-shadow: 0 3px 12px rgba(0,0,0,0.18), 0 1px 0 rgba(0,0,0,0.05); letter-spacing: 0.5px; }
+    .att-breadcrumb { display: inline-block; margin-top: 4px; padding: 6px 10px; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35); color: rgba(255,255,255,0.92); font-size: 0.95rem; border-radius: 999px; backdrop-filter: blur(6px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+    .att-sections { display: grid; grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 20px; align-items: stretch; grid-auto-rows: 1fr; }
+    @media (max-width: 900px) { .att-sections { grid-template-columns: 1fr; } }
+    .att-sections > .att-card { height: 100%; }
+    .att-sections .quick-card { margin: 0 !important; }
+    .att-card { background: rgba(255,255,255,0.86); border-radius: 14px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid rgba(255,255,255,0.65); backdrop-filter: blur(8px); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .att-card:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
+    .att-card h3 { margin: 0 0 12px 0; }
+    .att-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .att-btn { padding: 10px 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 6px 14px rgba(118,75,162,0.25); transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease; }
+    .att-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(118,75,162,0.30); filter: brightness(1.03); }
+    .att-btn.secondary { background: #f3f6fb; color: #2d3748; border: 1px solid #e2e8f0; box-shadow: none; }
+    .att-btn.secondary:hover { background: #e9eef7; }
+    .att-btn.danger { background: #e53e3e; }
+    .att-btn.success { background: #38a169; color: #fff; }
+    .issues-btn { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; box-shadow: 0 8px 18px rgba(217,119,6,0.35), 0 0 0 2px rgba(255,255,255,0.4); }
+    .issues-btn:hover { filter: brightness(1.06); box-shadow: 0 12px 24px rgba(217,119,6,0.4), 0 0 0 2px rgba(255,255,255,0.55); }
+    .att-input { padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%; }
+    .list { border: 1px solid rgba(226,232,240,0.8); border-radius: 10px; padding: 8px; max-height: 360px; overflow: auto; background: rgba(255,255,255,0.8); }
+    .list-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; border-radius: 8px; background: #fff; transition: background 0.2s ease, transform 0.1s ease; }
+    .list-item:last-child { border-bottom: none; }
+    .list-item:hover { background: #f6f9ff; transform: translateY(-1px); }
+    .calendar { display: grid; grid-template-columns: repeat(7, minmax(32px, 72px)); gap: 6px; user-select: none; justify-content: center; margin: 0 auto; max-width: 560px; }
+    .calendar .day { padding: clamp(4px, 0.9vw, 8px); text-align: center; border-radius: 10px; cursor: pointer; background: #f7fafc; border: 1px solid #e2e8f0; transition: background 0.15s ease, transform 0.1s ease, color 0.15s ease; box-shadow: 0 1px 0 rgba(0,0,0,0.02); font-size: clamp(0.8rem, 1vw, 0.95rem); }
+    .calendar .day:hover { background: #eef2ff; }
+    .calendar .day.header { background: transparent; font-weight: bold; cursor: default; }
+    .calendar .day.empty { background: transparent; cursor: default; }
+    .calendar .day.selected { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-color: transparent; box-shadow: 0 6px 12px rgba(118,75,162,0.25); }
+    .calendar-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .muted { color: #5f6b7a; font-size: 0.92rem; }
+    .hidden { display: none; }
+    .badge { display: inline-block; margin-left: 6px; padding: 3px 8px; border-radius: 999px; font-size: 0.75rem; color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+    .badge.present { background: #2b6cb0; }
+    .badge.absent { background: #e53e3e; }
+    /* tiny badges for quick calendar */
+    .badge-mini { display:inline-block; margin-left:4px; padding:2px 6px; border-radius:999px; font-size:0.68rem; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.12); }
+    .badge-mini.present { background:#2b6cb0; }
+    .badge-mini.absent { background:#e53e3e; }
+
+    /* Responsive tweaks for mobile */
+    @media (max-width: 768px) {
+      .att-container { padding: 14px; }
+      .att-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .att-actions { width: 100%; justify-content: flex-start; gap: 10px; }
+      .att-sections { grid-template-columns: 1fr; gap: 14px; }
+      .att-card { padding: 14px; border-radius: 12px; }
+      .list { max-height: 50vh; }
+      .calendar { gap: 4px; grid-template-columns: repeat(7, minmax(28px, 44px)); justify-content: center; max-width: 380px; }
+      .calendar .day { padding: 6px; border-radius: 8px; font-size: 0.85rem; }
+      .calendar .day.header { font-size: 0.9rem; }
+      .att-btn { padding: 9px 12px; border-radius: 7px; }
+      .att-input { padding: 10px; }
+      #monthLabel { font-weight: 600; }
+      .att-breadcrumb { font-size: 0.9rem; padding: 5px 9px; }
+    }
+
+    @media (max-width: 420px) {
+      .att-header h1 { font-size: 1.6rem; }
+      .calendar .day { padding: 6px; }
+      .att-btn { padding: 8px 10px; }
+    }
+
+    @media (min-width: 1280px) {
+      .calendar { grid-template-columns: repeat(7, minmax(36px, 80px)); max-width: 620px; }
+    }
+
+    /* Force compact sizing for attendance calendars */
+    .calendar.compact { grid-template-columns: repeat(7, minmax(20px, 40px)) !important; max-width: 340px !important; gap: 6px !important; justify-content: center !important; margin: 0 auto !important; }
+    .calendar.compact .day { padding: 5px !important; font-size: 0.78rem !important; border-radius: 8px !important; }
+    @media (max-width: 768px) {
+      .calendar.compact { grid-template-columns: repeat(7, minmax(18px, 34px)) !important; max-width: 300px !important; gap: 4px !important; }
+      .calendar.compact .day { padding: 4px !important; font-size: 0.74rem !important; }
+    }
+    @media (min-width: 1280px) {
+      .calendar.compact { grid-template-columns: repeat(7, minmax(22px, 44px)) !important; max-width: 360px !important; }
+    }
+
+    /* Quick Attendance card and inner width constraints */
+    .quick-card { max-width: none; width: 100%; margin: 0 !important; padding: 14px !important; }
+    .quick-card .att-actions { justify-content: center; }
+    .quick-inner { max-width: 340px; margin: 0 auto; }
+    @media (max-width: 768px) { .quick-inner { max-width: 300px; } }
+    @media (min-width: 1280px) { .quick-inner { max-width: 360px; } }
+    /* Center header/desc and constrain controls */
+    .quick-card h3, .quick-card > .muted { text-align: center; }
+    .quick-card .att-actions { max-width: 340px; margin: 0 auto 8px; }
+    @media (max-width: 768px) { .quick-card .att-actions { max-width: 300px; } }
+    @media (min-width: 1280px) { .quick-card .att-actions { max-width: 360px; } }
+
+    /* Compact calendar nav width */
+    .quick-card .calendar-nav { justify-content: center !important; margin: 0 auto 8px !important; max-width: 340px !important; }
+    @media (max-width: 768px) { .quick-card .calendar-nav { max-width: 300px !important; } }
+    @media (min-width: 1280px) { .quick-card .calendar-nav { max-width: 360px !important; } }
+  </style>
+</head>
+<body>
+  <div class="att-container">
+    <div class="att-header">
+      <div>
+        <h1>Attendance Management</h1>
+        <div class="att-breadcrumb" id="breadcrumb"></div>
+      </div>
+      <div class="att-actions">
+        <button class="att-btn secondary" onclick="goBackToDashboard()">← Back to Dashboard</button>
+        <button class="att-btn issues-btn" onclick="openIssuesModal()">⚠ Issues</button>
+      </div>
+    </div>
+
+    <div class="att-sections">
+      <!-- Subjects management -->
+      <div class="att-card">
+        <h3>Subjects</h3>
+        <div class="att-actions" style="margin-bottom: 8px;">
+          <input id="newSubject" class="att-input" placeholder="Add new subject e.g. Mathematics" />
+          <button class="att-btn" onclick="addSubject()">Add Subject</button>
+        </div>
+        <div id="subjectsList" class="list"></div>
+      </div>
+      <!-- Quick Attendance: Date-first workflow -->
+      <div class="att-card quick-card" style="margin-top: 18px;">
+        <h3>Quick Attendance (Date-first)</h3>
+        <div class="muted" style="margin-bottom:8px;">Select dates once, then quickly mark Present/Absent per student.</div>
+        <div class="att-actions" style="gap:10px; align-items:center; margin-bottom:10px;">
+          <label for="quickSubject" class="muted">Subject:</label>
+          <select id="quickSubject" class="att-input" style="max-width: 280px;"></select>
+          <button class="att-btn secondary" onclick="quickClearDates()">Clear Dates</button>
+        </div>
+        <div class="quick-inner">
+          <div class="calendar-nav">
+            <button class="att-btn secondary" onclick="quickPrevMonth()">Prev</button>
+            <div id="quickMonthLabel"></div>
+            <button class="att-btn secondary" onclick="quickNextMonth()">Next</button>
+          </div>
+          <div class="calendar compact" id="quickCalendarGrid"></div>
+          <div class="att-actions" style="margin-top: 12px; gap: 8px; flex-wrap: wrap; align-items:center;">
+            <input id="quickStudentSearch" class="att-input" placeholder="Search student by name or roll number" />
+          </div>
+          <div id="quickStudentsList" class="list" style="margin-top: 10px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Issues Modal -->
+  <div id="issuesModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3>Attendance Issues</h3>
+        <button class="close-btn" onclick="closeModal('issuesModal')">&times;</button>
+      </div>
+      <div style="padding: 16px;">
+        <div class="form-group">
+          <label for="issuesSubject">Select Subject</label>
+          <select id="issuesSubject"></select>
+        </div>
+        <div id="issuesList" class="items-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Read query params
+    const params = new URLSearchParams(window.location.search);
+    const course = params.get('course');
+    const year = params.get('year');
+    const section = params.get('section');
+
+    const breadcrumb = document.getElementById('breadcrumb');
+    function updateBreadcrumb() {
+      breadcrumb.textContent = `${course || ''} > ${year || ''} > ${section || ''}`;
+    }
+
+    function goBackToDashboard() { window.location.href = '/'; }
+
+    function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+    function apiCall(endpoint, options = {}) {
+      const headers = options.headers || {};
+      if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
+      else delete headers['Content-Type'];
+      return fetch(endpoint, { ...options, headers }).then(async r => {
+        const ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) throw new Error('Non-JSON response');
+        const data = await r.json();
+        if (!r.ok || data.error) throw new Error(data.error || 'Request failed');
+        return data;
+      });
+    }
+
+    // State
+    let subjects = [];
+    let students = [];
+    let selectedSubject = null;
+    let selectedStudent = null; // object
+    let selectedDates = new Set(); // 'YYYY-MM-DD'
+    let lastMarkedDates = []; // remember last used dates for classic panel
+    let presentCounts = {}; // { 'YYYY-MM-DD': number }
+    let absentCounts = {};  // { 'YYYY-MM-DD': number }
+    let viewYear, viewMonth; // calendar view
+
+    // Quick-mark mode state
+    let quickSelectedSubject = null;
+    let quickSelectedDates = new Set();
+    let quickViewYear, quickViewMonth;
+    let quickPresentCounts = {}; // counts for last-acted student
+    let quickAbsentCounts = {};
+    let quickLastStudentId = null;
+
+    function ymd(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    async function init() {
+      updateBreadcrumb();
+      if (!course || !year || !section) {
+        alert('Missing course/year/section. Open this page from the faculty dashboard.');
+        return;
+      }
+      await loadSubjects();
+      await loadStudents();
+            const today = new Date();
+      // Quick mode initialization
+      quickViewYear = today.getFullYear(); quickViewMonth = today.getMonth();
+      renderQuickSubjectsSelect();
+      renderQuickCalendar();
+      renderQuickStudents(students);
+      initQuickSearch();
+    }
+
+    async function loadSubjects() {
+      subjects = await apiCall(`/attendance/subjects/${encodeURIComponent(course)}/${encodeURIComponent(year)}/${encodeURIComponent(section)}`);
+      renderSubjects();
+      renderQuickSubjectsSelect();
+    }
+
+    async function addSubject() {
+      const input = document.getElementById('newSubject');
+      const name = (input.value || '').trim();
+      if (!name) return;
+      const res = await apiCall(`/attendance/subjects/${encodeURIComponent(course)}/${encodeURIComponent(year)}/${encodeURIComponent(section)}`, {
+        method: 'POST',
+        body: JSON.stringify({ name })
+      });
+      input.value = '';
+      await loadSubjects();
+    }
+
+    async function deleteSubject(name) {
+      if (!confirm(`Delete subject "${name}"?`)) return;
+      await apiCall(`/attendance/subjects/${encodeURIComponent(course)}/${encodeURIComponent(year)}/${encodeURIComponent(section)}/${encodeURIComponent(name)}`, { method: 'DELETE' });
+      await loadSubjects();
+    }
+
+    function renderSubjects() {
+      const container = document.getElementById('subjectsList');
+      container.innerHTML = '';
+      if (!subjects || subjects.length === 0) {
+        container.innerHTML = '<div class="list-item"><span>No subjects added yet.</span></div>';
+        return;
+      }
+      subjects.forEach(name => {
+        const row = document.createElement('div');
+        row.className = 'list-item';
+        const left = document.createElement('div');
+        left.textContent = name;
+        const right = document.createElement('div');
+        const delBtn = document.createElement('button');
+        delBtn.className = 'att-btn danger';
+        delBtn.textContent = 'Delete';
+        delBtn.onclick = () => deleteSubject(name);
+        right.appendChild(delBtn);
+        row.appendChild(left);
+        row.appendChild(right);
+        container.appendChild(row);
+      });
+    }
+
+    async function loadStudents() {
+      students = await apiCall(`/get_students/${encodeURIComponent(course)}/${encodeURIComponent(year)}/${encodeURIComponent(section)}`);
+      renderQuickStudents(students);
+    }
+
+    function initSearch() {
+      const search = document.getElementById('studentSearch');
+      search.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        const filtered = students.filter(s => (s.name || '').toLowerCase().includes(q) || (s.rollNumber || '').toLowerCase().includes(q));
+        renderStudents(filtered);
+      });
+    }
+
+    function renderStudents(list) {
+      const panel = document.getElementById('studentsPanel');
+      const container = document.getElementById('studentsList');
+      container.innerHTML = '';
+      if (!selectedSubject) {
+        panel.classList.add('hidden');
+        return;
+      }
+      panel.classList.remove('hidden');
+      if (!list || list.length === 0) {
+        container.innerHTML = '<div class="list-item"><span>No students in this section.</span></div>';
+        return;
+      }
+      list.forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'list-item';
+        const left = document.createElement('div');
+        left.innerHTML = `<strong>${s.name}</strong> <span class="muted">(${s.rollNumber})</span>`;
+        const right = document.createElement('div');
+        const selectBtn = document.createElement('button');
+        selectBtn.className = 'att-btn';
+        selectBtn.textContent = 'Mark';
+        selectBtn.onclick = () => onSelectStudent(s);
+        right.appendChild(selectBtn);
+        row.appendChild(left);
+        row.appendChild(right);
+        container.appendChild(row);
+      });
+    }
+
+    async function onSelectSubject(name) {
+      selectedSubject = name;
+      selectedStudent = null;
+      selectedDates = new Set();
+      document.getElementById('calendarPanel').classList.add('hidden');
+      document.getElementById('currentSelection').textContent = `Subject: ${selectedSubject}. Select a student to mark attendance.`;
+      renderStudents(students);
+    }
+
+    async function onSelectStudent(stu) {
+      selectedStudent = stu;
+      document.getElementById('currentSelection').textContent = `Subject: ${selectedSubject} | Student: ${stu.name} (${stu.rollNumber})`;
+      await loadExistingAttendance();
+      document.getElementById('calendarPanel').classList.remove('hidden');
+      renderCalendar();
+    }
+
+    async function loadExistingAttendance() {
+      presentCounts = {}; absentCounts = {};
+      if (!selectedSubject || !selectedStudent) return;
+      const rec = await apiCall(`/attendance/records/${encodeURIComponent(course)}/${encodeURIComponent(year)}/${encodeURIComponent(section)}?subject=${encodeURIComponent(selectedSubject)}&studentId=${encodeURIComponent(selectedStudent.id)}&detailed=1`);
+      presentCounts = rec.present || {};
+      absentCounts = rec.absent || {};
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById('calendarGrid');
+      const label = document.getElementById('monthLabel');
+      if (!grid || viewYear == null || viewMonth == null) return;
+      const firstDay = new Date(viewYear, viewMonth, 1);
+      const lastDay = new Date(viewYear, viewMonth + 1, 0);
+      const startWeekDay = firstDay.getDay(); // 0 Sun
+      const daysInMonth = lastDay.getDate();
+      label.textContent = `${firstDay.toLocaleString('default', { month: 'long' })} ${viewYear}`;
+      grid.innerHTML = '';
+      const headers = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      headers.forEach(h => {
+        const d = document.createElement('div'); d.className = 'day header'; d.textContent = h; grid.appendChild(d);
+      });
+      for (let i=0;i<startWeekDay;i++){ const d=document.createElement('div'); d.className='day empty'; grid.appendChild(d); }
+      for (let day=1; day<=daysInMonth; day++){
+        const dEl = document.createElement('div');
+        dEl.className = 'day';
+        const date = new Date(viewYear, viewMonth, day);
+        const key = ymd(date);
+        if (selectedDates.has(key)) dEl.classList.add('selected');
+        // day number
+        const num = document.createElement('div');
+        num.textContent = day;
+        dEl.appendChild(num);
+        // present/absent badges
+        const p = parseInt(presentCounts[key] || 0, 10);
+        const a = parseInt(absentCounts[key] || 0, 10);
+        if (p > 0) {
+          const sp = document.createElement('span');
+          sp.className = 'badge present';
+          sp.textContent = `P:${p}`;
+          dEl.appendChild(sp);
+        }
+        if (a > 0) {
+          const sa = document.createElement('span');
+          sa.className = 'badge absent';
+          sa.textContent = `A:${a}`;
+          dEl.appendChild(sa);
+        }
+        dEl.onclick = () => toggleDate(key, dEl);
+        grid.appendChild(dEl);
+      }
+    }
+
+    function toggleDate(key, el) {
+      if (!selectedSubject || !selectedStudent) return;
+      if (selectedDates.has(key)) { selectedDates.delete(key); el.classList.remove('selected'); }
+      else { selectedDates.add(key); el.classList.add('selected'); }
+    }
+
+    function prevMonth(){
+      if (--viewMonth < 0){ viewMonth = 11; viewYear--; }
+      renderCalendar();
+    }
+    function nextMonth(){
+      if (++viewMonth > 11){ viewMonth = 0; viewYear++; }
+      renderCalendar();
+    }
+    function clearSelection(){ selectedDates = new Set(); renderCalendar(); }
+
+    async function markAttendance(status, operation){
+      if (!selectedSubject || !selectedStudent) { alert('Select subject and student first'); return; }
+      let dates = Array.from(selectedDates.values()).sort();
+      if (!dates.length && lastMarkedDates && lastMarkedDates.length) { dates = lastMarkedDates.slice(); }
+      if (!dates.length) { alert('Select at least one date.'); return; }
+      await apiCall(`/attendance/records/${encodeURIComponent(course)}/${encodeURIComponent(year)}/${encodeURIComponent(section)}`, {
+        method: 'POST',
+        body: JSON.stringify({ subject: selectedSubject, studentId: selectedStudent.id, dates, status, operation })
+      });
+      lastMarkedDates = dates;
+      await loadExistingAttendance();
+      renderCalendar();
+    }
+
+    async function saveAttendance(){
+      // Fallback: sets present count = 1 for selected dates
+      return markAttendance('present','set');
+    }
+
+    // Quick Attendance (Date-first) logic
+    function renderQuickSubjectsSelect(){
+      const sel = document.getElementById('quickSubject');
+      if (!sel) return;
+      sel.innerHTML = '';
+      if (!subjects || subjects.length === 0){
+        const o = document.createElement('option'); o.value=''; o.textContent = 'No subjects'; sel.appendChild(o);
+        quickSelectedSubject = null;
+      } else {
+        // Keep previously selected if still available; else default first
+        if (!quickSelectedSubject || !subjects.includes(quickSelectedSubject)) quickSelectedSubject = subjects[0];
+        subjects.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; if (s===quickSelectedSubject) o.selected = true; sel.appendChild(o); });
+      }
+      sel.onchange = ()=>{ quickSelectedSubject = sel.value || null; quickPresentCounts = {}; quickAbsentCounts = {}; renderQuickCalendar(); };
+    }
+
+    function renderQuickCalendar(){
+      const grid = document.getElementById('quickCalendarGrid');
+      const label = document.getElementById('quickMonthLabel');
+      if (!grid || quickViewYear == null || quickViewMonth == null) return;
+      const firstDay = new Date(quickViewYear, quickViewMonth, 1);
+      const lastDay = new Date(quickViewYear, quickViewMonth + 1, 0);
+      const startWeekDay = firstDay.getDay();
+      const daysInMonth = lastDay.getDate();
+      label.textContent = `${firstDay.toLocaleString('default', { month: 'long' })} ${quickViewYear}`;
+      grid.innerHTML = '';
+      const headers = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      headers.forEach(h => { const d=document.createElement('div'); d.className='day header'; d.textContent=h; grid.appendChild(d); });
+      for (let i=0;i<startWeekDay;i++){ const d=document.createElement('div'); d.className='day empty'; grid.appendChild(d); }
+      for (let day=1; day<=daysInMonth; day++){
+        const dEl = document.createElement('div');
+        dEl.className = 'day';
+        const date = new Date(quickViewYear, quickViewMonth, day);
+        const key = ymd(date);
+        if (quickSelectedDates.has(key)) dEl.classList.add('selected');
+        const num = document.createElement('div'); num.textContent = day; dEl.appendChild(num);
+        // show mini counts for last-acted student (if available)
+        const p = parseInt(quickPresentCounts[key] || 0, 10);
+        const a = parseInt(quickAbsentCounts[key] || 0, 10);
+        if (p > 0) { const sp = document.createElement('span'); sp.className = 'badge-mini present'; sp.textContent = `P:${p}`; dEl.appendChild(sp); }
+        if (a > 0) { const sa = document.createElement('span'); sa.className = 'badge-mini absent'; sa.textContent = `A:${a}`; dEl.appendChild(sa); }
+        dEl.onclick = () => quickToggleDate(key, dEl);
+        grid.appendChild(dEl);
+      }
+    }
+    function quickPrevMonth(){ if (--quickViewMonth < 0){ quickViewMonth = 11; quickViewYear--; } renderQuickCalendar(); }
+    function quickNextMonth(){ if (++quickViewMonth > 11){ quickViewMonth = 0; quickViewYear++; } renderQuickCalendar(); }
+    function quickToggleDate(key, el){ if (quickSelectedDates.has(key)){ quickSelectedDates.delete(key); el.classList.remove('selected'); } else { quickSelectedDates.add(key); el.classList.add('selected'); } }
+    function quickClearDates(){ quickSelectedDates = new Set(); renderQuickCalendar(); }
+
+    function initQuickSearch(){
+      const search = document.getElementById('quickStudentSearch');
+      if (!search) return;
+      search.addEventListener('input', (e)=>{
+        const q = (e.target.value || '').toLowerCase();
+        const filtered = students.filter(s => (s.name || '').toLowerCase().includes(q) || (s.rollNumber || '').toLowerCase().includes(q));
+        renderQuickStudents(filtered);
+      });
+    }
+
+    async function quickLoadCountsFor(studentId){
+      if (!quickSelectedSubject || !studentId) { quickPresentCounts = {}; quickAbsentCounts = {}; return; }
+      try {
+        const rec = await apiCall(`/attendance/records/${encodeURIComponent(course)}/${encodeURIComponent(year)}/${encodeURIComponent(section)}?subject=${encodeURIComponent(quickSelectedSubject)}&studentId=${encodeURIComponent(studentId)}&detailed=1`);
+        quickPresentCounts = rec.present || {};
+        quickAbsentCounts = rec.absent || {};
+      } catch(e){ quickPresentCounts = {}; quickAbsentCounts = {}; }
+    }
+
+    function renderQuickStudents(list){
+      const container = document.getElementById('quickStudentsList');
+      if (!container) return;
+      container.innerHTML = '';
+      const data = list && list.length ? list : students;
+      if (!data || data.length === 0){ container.innerHTML = '<div class="list-item"><span>No students in this section.</span></div>'; return; }
+      data.forEach(s=>{
+        const row = document.createElement('div'); row.className = 'list-item';
+        const left = document.createElement('div'); left.innerHTML = `<strong>${s.name}</strong> <span class="muted">(${s.rollNumber})</span>`;
+        const right = document.createElement('div');
+        const pBtn = document.createElement('button'); pBtn.className='att-btn secondary'; pBtn.textContent='Present (+1)';
+        const aBtn = document.createElement('button'); aBtn.className='att-btn secondary'; aBtn.textContent='Absent (+1)';
+        const upBtn = document.createElement('button'); upBtn.className='att-btn secondary'; upBtn.textContent='Undo Present (-1)';
+        const uaBtn = document.createElement('button'); uaBtn.className='att-btn secondary'; uaBtn.textContent='Undo Absent (-1)';
+
+        // Change colors on click: Present -> green, Absent -> red; Undo -> back to grey
+        pBtn.onclick = async ()=>{
+          pBtn.classList.remove('secondary');
+          pBtn.classList.add('success');
+          aBtn.classList.remove('danger');
+          if(!aBtn.classList.contains('secondary')) aBtn.classList.add('secondary');
+          await quickMark(s.id,'present','increment');
+        };
+        aBtn.onclick = async ()=>{
+          aBtn.classList.remove('secondary');
+          aBtn.classList.add('danger');
+          pBtn.classList.remove('success');
+          if(!pBtn.classList.contains('secondary')) pBtn.classList.add('secondary');
+          await quickMark(s.id,'absent','increment');
+        };
+        upBtn.onclick = async ()=>{
+          pBtn.classList.remove('success');
+          if(!pBtn.classList.contains('secondary')) pBtn.classList.add('secondary');
+          await quickMark(s.id,'present','decrement');
+        };
+        uaBtn.onclick = async ()=>{
+          aBtn.classList.remove('danger');
+          if(!aBtn.classList.contains('secondary')) aBtn.classList.add('secondary');
+          await quickMark(s.id,'absent','decrement');
+        };
+
+        right.appendChild(pBtn); right.appendChild(aBtn); right.appendChild(upBtn); right.appendChild(uaBtn);
+        row.appendChild(left); row.appendChild(right);
+        container.appendChild(row);
+      });
+    }
+
+    async function quickMark(studentId, status, operation){
+      if (!quickSelectedSubject){ alert('Select a subject for quick marking.'); return; }
+      const dates = Array.from(quickSelectedDates.values()).sort();
+      if (!dates.length){ alert('Select at least one date in the Quick Attendance calendar.'); return; }
+      await apiCall(`/attendance/records/${encodeURIComponent(course)}/${encodeURIComponent(year)}/${encodeURIComponent(section)}`, {
+        method: 'POST',
+        body: JSON.stringify({ subject: quickSelectedSubject, studentId, dates, status, operation })
+      });
+      // refresh counts for this student and re-render mini badges
+      quickLastStudentId = studentId;
+      await quickLoadCountsFor(studentId);
+      renderQuickCalendar();
+    }
+
+    // Issues Modal logic
+    function openIssuesModal(){
+      document.getElementById('issuesModal').classList.add('active');
+      loadIssuesSubjects();
+    }
+    async function loadIssuesSubjects(){
+      const sel = document.getElementById('issuesSubject');
+      sel.innerHTML='';
+      const subs = await apiCall(`/attendance/subjects/${encodeURIComponent(course)}/${encodeURIComponent(year)}/${encodeURIComponent(section)}`);
+      if (!subs || subs.length===0){ sel.innerHTML = '<option value="">No subjects</option>'; document.getElementById('issuesList').innerHTML='<p class="muted">No issues found.</p>'; return; }
+      subs.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+      sel.onchange = ()=> loadIssues(sel.value);
+      sel.dispatchEvent(new Event('change'));
+    }
+    async function loadIssues(subject){
+      const list = await apiCall(`/attendance_issues/${encodeURIComponent(course)}/${encodeURIComponent(year)}/${encodeURIComponent(section)}?subject=${encodeURIComponent(subject)}`);
+      const container = document.getElementById('issuesList');
+      container.innerHTML='';
+      if (!list || list.length===0){ container.innerHTML = '<p class="muted">No issues for this subject.</p>'; return; }
+      list.forEach(issue=>{
+        const div = document.createElement('div');
+        div.className='item';
+        div.innerHTML = `
+          <div class="item-info">
+            <h4>${issue.studentName} <small class="muted">(${issue.studentId})</small></h4>
+            <p><strong>Dates:</strong> ${issue.dates.join(', ')}</p>
+            <p><strong>Description:</strong> ${issue.description}</p>
+            <p><small>Created: ${new Date(issue.createdAt).toLocaleString()}</small></p>
+          </div>
+          <div class="item-actions">
+            <span class="status-badge">${issue.status || 'open'}</span>
+            <button class="edit-btn" onclick="updateIssueStatus('${issue.id}','accepted')">Accept</button>
+            <button class="assign-btn" onclick="updateIssueStatus('${issue.id}','resolved')">Resolve</button>
+            <button class="delete-item-btn" onclick="updateIssueStatus('${issue.id}','rejected')">Reject</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function updateIssueStatus(issueId, status){
+      await apiCall(`/attendance_issues/${encodeURIComponent(course)}/${encodeURIComponent(year)}/${encodeURIComponent(section)}/${encodeURIComponent(issueId)}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status })
+      });
+      // refresh list
+      const sel = document.getElementById('issuesSubject');
+      await loadIssues(sel.value);
+    }
+
+    init();
+  </script>
+</body>
+</html>
