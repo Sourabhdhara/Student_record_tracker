@@ -2,11 +2,6 @@
 
 # 🎓 Student Track Recorder
 
-<a href="https://sourabhdhara.pythonanywhere.com/" target="_blank">
-  <img src="https://img.shields.io/badge/Live_Demo-sourabhdhara.pythonanywhere.com-success?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo">
-</a>
-<br><br>
-
 <img src="ScreenShots/Home%20Page.png" alt="Student Record Tracker Banner" width="100%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
 
 **A comprehensive, interactive, and user-friendly Web Application to manage educational institutions seamlessly.**
@@ -16,6 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Frontend](https://img.shields.io/badge/HTML5%20|%20CSS3%20|%20JS-E34F26?style=for-the-badge&logo=html5&logoColor=white)](#)
 
+[**🌐 Live Server**](https://sourabhdhara.pythonanywhere.com/) •
 [**Explore Features**](#-core-features-detailed) •
 [**Installation**](#-quick-start) •
 [**Screenshots**](#-interactive-gallery) •
