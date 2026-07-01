@@ -2,7 +2,7 @@
 
 # 🎓 Student Track Recorder
 
-<img src="Screenshot%202026-07-01%20200654.png" alt="Student Track Recorder Home" width="100%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+<img src="Screenshot/Screenshot%202026-07-01%20200654.png" alt="Student Track Recorder Home" width="100%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
 
 **A comprehensive, interactive, and user-friendly web application to manage educational institutions seamlessly.**
 
@@ -73,7 +73,7 @@ The highest level of access. Manages the entire academic hierarchy and oversees 
 
 *Dashboard Preview:*
 <br>
-<img src="Screenshot%202026-07-01%20201816.png" width="100%" style="border-radius: 8px;">
+<img src="Screenshot/Screenshot%202026-07-01%20201816.png" width="100%" style="border-radius: 8px;">
 </details>
 
 <details>
@@ -90,7 +90,7 @@ Assigned to specific sections by the Main Faculty. Focuses on day-to-day academi
 
 *Dashboard Preview:*
 <br>
-<img src="Screenshot%202026-07-01%20202056.png" width="100%" style="border-radius: 8px;">
+<img src="Screenshot/Screenshot%202026-07-01%20202056.png" width="100%" style="border-radius: 8px;">
 </details>
 
 <details>
@@ -106,7 +106,7 @@ The end-users who consume content, track their progress, and interact with facul
 
 *Dashboard Preview:*
 <br>
-<img src="Screenshot%202026-07-01%20200744.png" width="100%" style="border-radius: 8px;">
+<img src="Screenshot/Screenshot%202026-07-01%20200744.png" width="100%" style="border-radius: 8px;">
 </details>
 
 ---
@@ -117,22 +117,22 @@ Explore the visually rich interfaces designed for maximum productivity and ease 
 
 | Home | Faculty Login |
 | :---: | :---: |
-| <img src="Screenshot%202026-07-01%20200654.png" width="400"> | <img src="Screenshot%202026-07-01%20200744.png" width="400"> |
+| <img src="Screenshot/Screenshot%202026-07-01%20200654.png" width="400"> | <img src="Screenshot/Screenshot%202026-07-01%20200744.png" width="400"> |
 | **Entry screen** | **Faculty sign-in** |
 
 | Faculty Dashboard | Attendance Management |
 | :---: | :---: |
-| <img src="Screenshot%202026-07-01%20201816.png" width="400"> | <img src="Screenshot%202026-07-01%20201845.png" width="400"> |
+| <img src="Screenshot/Screenshot%202026-07-01%20201816.png" width="400"> | <img src="Screenshot/Screenshot%202026-07-01%20201845.png" width="400"> |
 | **Course selection** | **Date-first attendance** |
 
 | Messages | Notes |
 | :---: | :---: |
-| <img src="Screenshot%202026-07-01%20202056.png" width="400"> | <img src="Screenshot%202026-07-01%20202232.png" width="400"> |
+| <img src="Screenshot/Screenshot%202026-07-01%20202056.png" width="400"> | <img src="Screenshot/Screenshot%202026-07-01%20202232.png" width="400"> |
 | **Real-time chat & groups** | **Organized notes & materials** |
 
 | Verification | Login / Reset Entry |
 | :---: | :---: |
-| <img src="Screenshot%202026-07-01%20202118.png" width="400"> | <img src="Screenshot%202026-07-01%20200744.png" width="400"> |
+| <img src="Screenshot/Screenshot%202026-07-01%20202118.png" width="400"> | <img src="Screenshot/Screenshot%202026-07-01%20200744.png" width="400"> |
 | **Certificate scrutiny** | **Forgot password via email OTP** |
 
 ---
