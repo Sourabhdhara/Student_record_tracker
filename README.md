@@ -2,9 +2,9 @@
 
 # 🎓 Student Track Recorder
 
-<img src="ScreenShots/Home%20Page.png" alt="Student Record Tracker Banner" width="100%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+<img src="Screenshot%202026-07-01%20200654.png" alt="Student Track Recorder Home" width="100%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
 
-**A comprehensive, interactive, and user-friendly Web Application to manage educational institutions seamlessly.**
+**A comprehensive, interactive, and user-friendly web application to manage educational institutions seamlessly.**
 
 [![Python](https://img.shields.io/badge/Python-3.7+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-2.0+-lightgrey.svg?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
@@ -23,12 +23,13 @@
 
 ## 🌟 About The Project
 
-**Student Track Recorder** is an all-in-one portal designed to bridge the gap between Faculty, Secondary Administrators (Teachers/Assistants), and Students. Built with **Flask** and structured with simple JSON storage, it eliminates database overhead while providing robust features like attendance tracking, file sharing, direct messaging, and document scrutiny.
+**Student Track Recorder** is an all-in-one portal designed to bridge the gap between Faculty, Secondary Administrators (Teachers/Assistants), and Students. Built with **Flask** and structured with simple JSON storage, it eliminates database overhead while providing robust features like attendance tracking, file sharing, direct messaging, document scrutiny, and student password recovery.
 
 ### 🔑 Key Highlights:
 - 🚀 **Zero Database Overhead:** Operates blazingly fast using secure JSON data structures.
 - 🏢 **Three-Tier Architecture:** Distinct portals with customized privileges for Main Faculty, Secondary Admins, and Students.
 - 🎨 **Interactive UI:** Clean, responsive, and intuitive design tailored for everyday academic use.
+- 🔐 **Password Recovery:** Students can reset forgotten passwords using email OTP verification.
 
 ---
 
@@ -72,7 +73,7 @@ The highest level of access. Manages the entire academic hierarchy and oversees 
 
 *Dashboard Preview:*
 <br>
-<img src="ScreenShots/Main%20Faculty%20dashboard.png" width="100%" style="border-radius: 8px;">
+<img src="Screenshot%202026-07-01%20201816.png" width="100%" style="border-radius: 8px;">
 </details>
 
 <details>
@@ -89,7 +90,7 @@ Assigned to specific sections by the Main Faculty. Focuses on day-to-day academi
 
 *Dashboard Preview:*
 <br>
-<img src="ScreenShots/Secondary%20admin's%20faculty%20dashboard.png" width="100%" style="border-radius: 8px;">
+<img src="Screenshot%202026-07-01%20202056.png" width="100%" style="border-radius: 8px;">
 </details>
 
 <details>
@@ -105,7 +106,7 @@ The end-users who consume content, track their progress, and interact with facul
 
 *Dashboard Preview:*
 <br>
-<img src="ScreenShots/Student%20log%20in%20dashboard.png" width="100%" style="border-radius: 8px;">
+<img src="Screenshot%202026-07-01%20200744.png" width="100%" style="border-radius: 8px;">
 </details>
 
 ---
@@ -114,27 +115,32 @@ The end-users who consume content, track their progress, and interact with facul
 
 Explore the visually rich interfaces designed for maximum productivity and ease of use.
 
-| Login Interface | Course Selection |
+| Home | Faculty Login |
 | :---: | :---: |
-| <img src="ScreenShots/Login%20Page.png" width="400"> | <img src="ScreenShots/Select%20courses%20interface.png" width="400"> |
-| **Secure Authentication** | **Organized Academic Structure** |
+| <img src="Screenshot%202026-07-01%20200654.png" width="400"> | <img src="Screenshot%202026-07-01%20200744.png" width="400"> |
+| **Entry screen** | **Faculty sign-in** |
 
-| Attendance Management | Communications |
+| Faculty Dashboard | Attendance Management |
 | :---: | :---: |
-| <img src="ScreenShots/attendance.png" width="400"> | <img src="ScreenShots/messages.png" width="400"> |
-| **Subject-wise Tracking** | **Real-time Chat & Groups** |
+| <img src="Screenshot%202026-07-01%20201816.png" width="400"> | <img src="Screenshot%202026-07-01%20201845.png" width="400"> |
+| **Course selection** | **Date-first attendance** |
 
-| Document Scrutiny | Resource Sharing |
+| Messages | Notes |
 | :---: | :---: |
-| <img src="ScreenShots/to%20verify%20authenticity%20of%20student%20uploaded%20cerificate.png" width="400"> | <img src="ScreenShots/notes.png" width="400"> |
-| **Verification Portal** | **Organized Notes & Materials** |
+| <img src="Screenshot%202026-07-01%20202056.png" width="400"> | <img src="Screenshot%202026-07-01%20202232.png" width="400"> |
+| **Real-time chat & groups** | **Organized notes & materials** |
+
+| Verification | Login / Reset Entry |
+| :---: | :---: |
+| <img src="Screenshot%202026-07-01%20202118.png" width="400"> | <img src="Screenshot%202026-07-01%20200744.png" width="400"> |
+| **Certificate scrutiny** | **Forgot password via email OTP** |
 
 ---
 
 ## ✨ Core Features Detailed
 
 ### 🛡️ Multi-Role Security & Hierarchy
-A strict access control system ensures that users only see what they are supposed to. Admins control the global state, teachers manage their designated subjects, and students track their individual performance. 
+A strict access control system ensures that users only see what they are supposed to. Admins control the global state, teachers manage their designated subjects, and students track their individual performance.
 
 ### 📊 Comprehensive Tracking
 - **Attendance:** Granular tracking by subject and date. Includes a built-in *issue reporting system* for students to contest marks or ask for corrections.
@@ -149,6 +155,11 @@ A strict access control system ensures that users only see what they are suppose
 - **Group Channels:** Section-wide discussions for class announcements and group problem-solving.
 - **Direct Messaging:** Private 1-on-1 chats with file attachment support between students and faculty.
 - **Permissions:** Admins can customize chat access levels dynamically to maintain decorum.
+
+### 🔐 Password Recovery for Students
+- Students can use the **Forgot / Reset Password** option from the login screen.
+- OTP is sent to the registered email address.
+- A new password can be set after OTP verification.
 
 ---
 
@@ -167,14 +178,14 @@ student-track-recorder/
 │   ├── style.css
 │   └── script.js
 └── data/                  # JSON Data Storage Hierarchy
-    ├── main_credential.json
-    └── B.Tech/
-        └── 1st Year/
-            └── A Section/
-                ├── students.json
-                ├── attendance.json
-                ├── messages.json
-                └── ...
+  ├── main_credential.json
+  └── B.Tech/
+    └── 1st Year/
+      └── A Section/
+        ├── students.json
+        ├── attendance.json
+        ├── messages.json
+        └── ...
 ```
 
 ---
